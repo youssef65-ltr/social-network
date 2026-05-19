@@ -4,7 +4,6 @@ import {
     FieldError,
     FieldGroup,
     FieldLabel,
-    FieldLegend,
     FieldSet,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -45,7 +44,6 @@ export default function LoginForm() {
     })
 
     const onSubmit = async (data) => {
-        console.log(data)
         try {
             await axiosClient.get("/sanctum/csrf-cookie")
             await axiosClient.post("/login", data)

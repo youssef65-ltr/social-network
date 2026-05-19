@@ -7,7 +7,7 @@ import {
 
 export default function Login() {
     return (
-        <section className="flex flex-col w-full h-screen justify-center items-center">
+        <section className="flex flex-col w-full min-h-screen justify-center items-center p-10">
             <Card className="w-fit">
                 <CardHeader className="text-2xl">
                     Login

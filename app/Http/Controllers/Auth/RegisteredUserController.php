@@ -22,16 +22,31 @@ class RegisteredUserController extends Controller
     public function store(Request $request): Response
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'username' => ['required', 'alpha_dash', 'max:30', 'unique:users,username'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'age' => ['required', 'integer', 'min:14', 'max:100'],
+            'name' => ['required', 'string', 'max:30'],
+            'bio' => ['nullable', 'string', 'min:50', 'max:250'],
+            'profile_img' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048']
         ]);
 
+        // Handle image upload
+        $imagePath = null;
+        if ($request->hasFile('profile_img')) {
+            $imagePath = $request->file('profile_img')->store('profile_images', 'public');
+        }
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->string('password')),
+            'username' => $request->input('username'),
+            'email' => $request->input('email'),
+            'password' => Hash::make($request->input('password')),
+            'age' => $request->input('age'),
+            'name' => $request->input('name'),
+            'bio' => $request->input('bio'),
+            'profile_img' => $imagePath
         ]);
+
 
         event(new Registered($user));
 
