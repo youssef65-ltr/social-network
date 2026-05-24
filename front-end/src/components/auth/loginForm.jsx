@@ -14,9 +14,9 @@ import { useForm } from "react-hook-form"
 // import { toast } from "sonner"
 import * as z from "zod"
 
-import { axiosClient } from "../../../api/axios"
-
 import { Loader } from 'lucide-react';
+import { loginUser, selectAuthStatus } from "@/features/auth/authSlice"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
 
 const formSchema = z.object({
     email: z
@@ -30,26 +30,29 @@ const formSchema = z.object({
 })
 
 export default function LoginForm() {
+    const dispatch = useAppDispatch()
+    const authStatus = useAppSelector(selectAuthStatus)
+    const isLoading = authStatus === "loading"
+
     const {
         register,
         handleSubmit,
         setError,
-        formState: { errors, isSubmitting },
+        formState: { errors },
     } = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: "admin@gmail.com",
-            password: "12345678",
+            email: "",
+            password: "",
         },
     })
 
     const onSubmit = async (data) => {
         try {
-            await axiosClient.get("/sanctum/csrf-cookie")
-            await axiosClient.post("/login", data)
+            await dispatch(loginUser(data)).unwrap()
             // toast.success("Logged in successfully!")
         } catch (err) {
-            const serverErrors = err?.response?.data?.errors
+            const serverErrors = err?.errors
 
             if (serverErrors) {
                 // Map Laravel validation errors back into the form
@@ -105,8 +108,8 @@ export default function LoginForm() {
                         )}
                     </Field>
 
-                    <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting && <Loader className="animate-spin"/>} login
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading && <Loader className="animate-spin"/>} login
                     </Button>
                 </FieldGroup>
             </FieldSet>

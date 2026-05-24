@@ -14,8 +14,9 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
-import { axiosClient } from "../../../api/axios"
 import { Loader } from "lucide-react"
+import { registerUser, selectAuthStatus } from "@/features/auth/authSlice"
+import { useAppDispatch, useAppSelector } from "@/store/hooks"
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024 // 2MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg", "image/gif"]
@@ -73,13 +74,17 @@ const formSchema = z
     })
 
 export default function RegisterForm() {
+    const dispatch = useAppDispatch()
+    const authStatus = useAppSelector(selectAuthStatus)
+    const isLoading = authStatus === "loading"
+
     const {
         register,
         handleSubmit,
         setError,
         watch,
         setValue,
-        formState: { errors, isSubmitting },
+        formState: { errors },
     } = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -98,27 +103,9 @@ export default function RegisterForm() {
 
     const onSubmit = async (data) => {
         try {
-            await axiosClient.get("/sanctum/csrf-cookie")
-
-            // Build FormData so the image is sent as multipart
-            const formData = new FormData()
-            formData.append("username", data.username)
-            formData.append("name", data.name)
-            formData.append("email", data.email)
-            formData.append("age", data.age)
-            formData.append("password", data.password)
-            formData.append("password_confirmation", data.password_confirmation)
-            if (data.bio) formData.append("bio", data.bio)
-            if (data.profile_img) formData.append("profile_img", data.profile_img)
-
-            await axiosClient.post("/register", formData, {
-                headers: { "Content-Type": "multipart/form-data" }, // override for this request only
-            })
-
-            console.log("everything went good")
-
+            await dispatch(registerUser(data)).unwrap()
         } catch (err) {
-            const serverErrors = err?.response?.data?.errors
+            const serverErrors = err?.errors
             if (serverErrors) {
                 Object.entries(serverErrors).forEach(([field, messages]) => {
                     setError(field, {
@@ -280,8 +267,8 @@ export default function RegisterForm() {
                         )}
                     </Field>
 
-                    <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting && <Loader className="animate-spin" />} Register
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading && <Loader className="animate-spin" />} Register
                     </Button>
                     
                 </FieldGroup>
