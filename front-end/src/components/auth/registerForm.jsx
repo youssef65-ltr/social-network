@@ -203,7 +203,7 @@ export default function RegisterForm() {
                         {errors.bio ? (
                             <FieldError>{errors.bio.message}</FieldError>
                         ) : (
-                            <FieldDescription>Optional · 100–250 characters</FieldDescription>
+                            <FieldDescription>Optional · 50–250 characters</FieldDescription>
                         )}
                     </Field>
 

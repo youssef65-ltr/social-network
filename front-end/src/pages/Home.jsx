@@ -1,9 +1,12 @@
 
 
+import { useAppSelector } from "@/store/hooks"
+
 export default function Home() {
+    const {user , isAuthenticated}= useAppSelector((state) => state.auth);
     return (
         <>
-            <h1>Home page</h1>
+            {isAuthenticated && <h1>hello {user.name}</h1>}
         </>
     )
 }
